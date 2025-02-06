@@ -1,4 +1,4 @@
 1. Run sudo docker-compose up -d
 2. Run producer.py
 3. Run consumer.py (make sure that the api is up)
-To terminate: sudo docker-compuse down
+To terminate: sudo docker-compose down

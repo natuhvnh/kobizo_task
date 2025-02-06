@@ -10,6 +10,8 @@ with open("model/large_transaction_model.pkl", "rb") as file:
     large_transaction_model = pickle.load(file)
 with open("model/rapid_transaction_model.pkl", "rb") as file:
     rapid_transaction_model = pickle.load(file)
+with open("model/fraud_model.pkl", "rb") as file:
+    fraud_model = pickle.load(file)
 #
 def feature_engineering(input_data):
     df = pd.DataFrame([input_data])
@@ -77,9 +79,27 @@ def predict():
     large_transaction_score = large_transaction_model.decision_function(input_data[input_feature])
     # rapid txn inference
     input_feature = ["method", "hour", "weekday_number", "txn_time_gap"]
-    print(input_data[input_feature])
     rapid_transaction = rapid_transaction_model.predict(input_data[input_feature])
     rapid_transaction_score = rapid_transaction_model.decision_function(input_data[input_feature])
+    # fraud txn inference
+    input_feature = [
+        "txn_value",
+        "method",
+        "token_price",
+        "liquidity",
+        "market_cap",
+        "hour",
+        "weekday_number",
+        "txn_value_to_token_price",
+        "txn_value_to_liquidity",
+        "txn_value_to_market_cap",
+        "method",
+        "hour",
+        "weekday_number",
+        "txn_time_gap",
+    ]
+    fraud_transaction = fraud_model.predict(input_data[input_feature])
+    fraud_transaction_score = fraud_model.decision_function(input_data[input_feature])
     # append & update current data => to be added
     # skip this part for demo and debug purposes
     # write predicted data
@@ -87,6 +107,8 @@ def predict():
     input_data["large_transaction_score"] = large_transaction_score
     input_data["rapid_transaction"] = rapid_transaction
     input_data["rapid_transaction_score"] = rapid_transaction_score
+    input_data["fraud_transaction"] = fraud_transaction
+    input_data["fraud_transaction_score"] = fraud_transaction_score
     utils.append_model_output(input_data, "data/model_output.parquet")
     # Return the prediction as JSON
     return jsonify(
@@ -95,6 +117,8 @@ def predict():
             "large_transaction_score": large_transaction_score[0],
             "rapid_transaction": int(rapid_transaction[0]),
             "rapid_transaction_score": rapid_transaction_score[0],
+            "fraud_transaction": int(fraud_transaction[0]),
+            "fraud_transaction_score": fraud_transaction_score[0],
         }
     )
 
